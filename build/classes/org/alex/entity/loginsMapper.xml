@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<!-- namespace:该mapper.xml映射文件的唯一标识  -->
+<mapper namespace="org.alex.entity.loginsMapper">
+	<select id="queryLoginsById" resultType="org.alex.entity.Logins" parameterType="String">
+		select * from logins where loginid = #{loginid} 
+	</select>
+	<insert id="loginsInsert" parameterType="org.alex.entity.Logins">
+		insert into logins values(#{loginid}, #{password}, #{userid})
+	</insert>
+	<select id="queryUserid" resultType="org.alex.entity.Users" parameterType="String">
+		select * from users where userid = #{userid} 
+	</select>
+	<insert id="addPartUsers" parameterType="org.alex.entity.Users">
+		insert into users(userid, username, phonenumber, email) values(#{UserID}, #{UserName}, #{PhoneNumber}, #{Email})
+	</insert>
+	<insert id="addUsers" parameterType="org.alex.entity.Users">
+		insert into users values(#{UserID}, #{UserName}, #{Gender}, #{Birthdate}, #{City}, #{Major}, #{DegreeLevel}, #{GraduateSchool}, #{PhoneNumber}, #{Email})
+	</insert>
+	<update id="editUsers">
+		update users
+		<set>
+			<if test="UserName != null">UserName = #{UserName},</if>
+			<if test="Gender != null">Gender = #{Gender},</if>
+			<if test="Birthdate != null">Birthdate = #{Birthdate},</if>
+			<if test="City != null">City = #{City},</if>
+			<if test="Major != null">Major = #{Major},</if>
+			<if test="DegreeLevel != null">DegreeLevel = #{DegreeLevel},</if>
+			<if test="GraduateSchool != null">GraduateSchool = #{GraduateSchool}</if>
+		</set>
+		where UserID = #{UserID}
+	</update>
+	<select id="queryUsersById" parameterType="String" resultType="org.alex.entity.Users">
+		select * from Users where userid = #{UserID}
+	</select>
+	
+	<!-- 求职意向 -->
+	<insert id="addJobIntension" parameterType="org.alex.entity.JobIntension" useGeneratedKeys="true" keyProperty="jobintensionid">
+		insert into jobintension(IndustryID, JobName, JobType, WorkplaceHope, salaryReq, WorkingTime, UserID) values(#{IndustryID}, #{JobName}, #{JobType}, #{WorkplaceHope}, #{SalaryReq}, #{WorkingTime}, #{UserID})
+	</insert>
+	
+	<!-- 查询企业信息 -->
+	<select id="queryCompanyInfo" resultType="org.alex.entity.Companys">
+		select * from companys
+	</select>
+	
+	<!-- 增加教育经历数据 -->
+	<insert id="addEducationExperience" parameterType="org.alex.entity.EducationExperience">
+		insert into educationalexperience values(#{SchoolName}, #{InSchoolTime}, #{OutSchoolTime}, #{DegreeLevel}, #{Major}, #{UserID})
+	</insert>
+	
+	<!-- 查询招聘公告信息 -->
+	<select id="queryRecruitmentads" resultType="org.alex.entity.Recruitmentads">
+		select * from recruitmentads
+	</select>
+	
+	<!-- 查询职位信息 -->
+	
+	<resultMap type="org.alex.entity.ActivityOfferInfosListVo" id="activityOfferInfosListMap">
+		<result property="CompanyID" column="CompanyID"/>
+		<result property="JobID" column="JobID" />
+		<result property="CompanyName" column="CompanyName" />
+		<result property="JobName" column="JobName" />
+		<result property="JobType" column="JobType" />
+		<result property="Salary" column="Salary" />
+		<result property="SalaryLow" column="SalaryLow" />
+		<result property="SalaryHigh" column="SalaryHigh" />
+		<result property="CityName" column="CityName" />
+		<result property="WorkExpName" column="WorkExpName" />
+		<result property="eduLevelName" column="eduLevelName" />
+		<result property="IfFulltime" column="IfFulltime" />
+		<result property="Welfares" column="Welfares" />
+	</resultMap>
+	
+	<select id="queryPartOffersInfo" resultMap="activityOfferInfosListMap">
+		select a.CompanyID,JobID,CompanyName,JobName,JobType,Salary,SalaryLow,SalaryHigh,CityName,WorkExpName,eduLevelName,IfFulltime,Welfares from offerinfos a
+		join companys b on b.CompanyID = a.CompanyID
+		join citys c on c.CityID = a.WorkCityID
+		join workexps d on d.WorkExpID = a.WorkExpID
+		join edulevels e on e.eduLevelID = a.eduLevelID
+	</select>
+	
+	<!-- 查询企业编号和职位编号，用于作为更新职位信息表的where条件 -->
+	<select id="querycidandjid" parameterType="java.util.List" resultType="java.util.Arrays">
+		select CompanyID,JobID from offerinfos a
+		join companys b on b.CompanyID = a.CompanyID
+		where b.CompanyName = #{CompanyName} and a.JobName = #{JobName} 
+	</select>
+	
+	<!-- 更新职位信息表（更新薪资相关） -->
+	<update id="addSalaryAbout">
+		update offerinfos
+		<set>
+			<if test="SalaryLow != null">SalaryLow = #{SalaryLow},</if>
+			<if test="SalaryHigh != null">SalaryHigh = #{SalaryHigh},</if>
+		</set>
+		where CompanyID = #{CompanyID} and JobID = #{JobID}
+	</update>
+	
+	<!-- 查询行业信息 -->
+	<select id="queryIndustrys" resultType="org.alex.entity.Industrys">
+		select * from industrys
+	</select>
+	
+	<!-- 查询学校信息 -->
+	<select id="queryUniversity" resultType="org.alex.entity.University">
+		select * from university
+	</select>
+	
+	<!-- 根据ID查询是否存在学校信息 -->
+	<select id="queryUniversityByID" parameterType="int" resultType="org.alex.entity.University">
+		select * from university where id = #{id}
+	</select>
+	
+	<!-- 查询招聘会举办信息 -->
+	
+	<resultMap type="org.alex.entity.ActivityJobfairsListVo" id="activityJobfairsListMap">
+		<result property="JobfairID" column="JobfairID" />
+		<result property="Title" column="Title" />
+		<result property="ReleaseSchoolID" column="ReleaseSchoolID"/>
+		<result property="name" column="name" />
+		<result property="ReleaseDate" column="ReleaseDate" />
+		<result property="HoldDate" column="HoldDate" />	
+	</resultMap>
+	
+	<select id="queryJobfairs" resultMap="activityJobfairsListMap">
+		select JobfairID,Title,ReleaseSchoolID,name,ReleaseDate,HoldDate from jobfairs a
+		join university b on b.id = a.ReleaseSchoolID
+	</select>
+	
+	<!-- 在企业报名表中增加数据 -->
+	<!--  <resultMap type="org.alex.entity.ActivitCompanySignupListVo" id="activityCompanySignupListMap">
+		<result property="id" column="id"/>
+		<result property="CompanyName" column="CompanyName"/>
+		<result property="companyField" column="companyField"/>
+		<result property="companyType" column="companyType"/>
+		<result property="companySize" column="companySize"/>
+		<result property="homepage" column="homepage"/>
+		<result property="ContactName" column="ContactName"/>
+		<result property="ContactPhone" column="ContactPhone"/>
+		<result property="ContactEmail" column="ContactEmail"/>
+		<result property="ContactWechat" column="ContactWechat"/>
+		<result property="ContactQQ" column="ContactQQ"/>
+		<result property="JobinfoDetails" column="JobinfoDetails"/>
+		<result property="RecruitmentFilePath" column="RecruitmentFilePath"/>
+	</resultMap>-->
+	
+	<insert id="addCompanySignup" parameterType="org.alex.entity.CompanySignup">
+		insert into CompanySignup values(#{CompanyID}, #{id}, #{ContactName}, #{ContactPhone}, #{ContactEmail}, #{ContactWechat}, #{ContactQQ}, #{JobinfoDetails}, #{RecruitmentFilePath})
+	</insert>
+	
+	<!-- 根据企业名称查询企业信息 -->
+	<select id="queryCompanyID" parameterType="String" resultType="org.alex.entity.Companys">
+		select * from companys where CompanyName = #{companyName}
+	</select>
+	
+	<!-- 根据企业名称查询企业ID -->
+	<select id="querycid" parameterType="String" resultType="int">
+		select CompanyID from companys where CompanyName = #{CompanyName}
+	</select>
+	 
+	<!-- 增加一条企业信息 -->
+	<insert id="addCompanys" parameterType="org.alex.entity.Companys">
+		insert into companys(CompanyName,CompanyField,CompanyType,CompanySize,Homepage) values(#{CompanyName},#{CompanyField},#{CompanyType},#{CompanySize},#{Homepage})
+	</insert>
+	
+	<!-- 查询各个省平均薪资 -->
+	
+	
+	<select id="queryProvinceSalaryAvg" resultType="java.util.Map">
+		select ProvinceName as 'name',cast(convert(SalaryAvg,decimal(8,2)) as char) as 'value' from province
+		where ProvinceID != '489'
+	</select>
+	
+	<!-- 查询各个省不同时间的薪资数据 -->
+	<select id="queryProvinceTimeSalary" resultType="java.util.Map">
+		select b.ProvinceName as 'name',cast(convert(a.SalaryAvg,decimal(8,2)) as char) as 'value' from provincetimesalary a
+		join province b on b.ProvinceID = a.ProvinceID
+		where a.ProvinceID != '489' and TimeID = #{TimeID}
+	</select>
+	
+	<!-- 查询省下面的城市的平均薪资 -->
+	<select id="queryCitySalaryAvg" parameterType="String" resultType="java.util.Map">
+		select CityName as 'name',cast(convert(SalaryAvg,decimal(8,2)) as char) as 'value' from citys
+		where ProvinceID = #{ProvinceID}
+	</select>
+	
+	<!-- 查询省份名称拼音 -->
+	<select id="queryProvinceNamePinyin" parameterType="String" resultType="String">
+		select PinYin from province where ProvinceName = #{ProvinceName}
+	</select>
+	
+	<!-- 查询全国五个区间的薪资情况 -->
+	<select id="queryChinaIntervalSalary" resultType="java.util.Map">
+		select LessFiveK,FiveToTenK,TenToFifteenK,FifteenToTwentyK,MorethanTwentyK from provincetimesalary
+		where ProvinceID = '489' and TimeID = #{TimeID}
+	</select>
+	<!-- 查询省份ID -->
+	<select id="queryProvinceID" parameterType="String" resultType="String">
+		select ProvinceID from province where ProvinceName = #{ProvinceName}
+	</select>
+	
+	<!-- 查询城市ID，平均薪资，级别 -->
+	
+	<resultMap type="org.alex.entity.ActivityCitysListVo" id="activityCitysListMap">
+		<result property="CityID" column="CityID" />
+		<result property="CityName" column="CityName" />
+		<result property="LevelName" column="LevelName"/>
+		<result property="ProvinceName" column="ProvinceName" />
+		<result property="SalaryAvg" column="SalaryAvg" />
+	</resultMap>
+	
+	<select id="queryCityInfos" resultMap="activityCitysListMap">
+		select CityID,CityName,LevelName,ProvinceName,a.SalaryAvg from citys a
+		join citylevels b on b.LevelID = a.LevelID
+		join province c on c.ProvinceID = a.ProvinceID	
+	</select>
+	
+	
+	<!-- 查询省份各个时间段的薪资数据，绘制折线图 -->
+	<select id="querypts" resultType="org.alex.entity.ProvinceTimeSalary">
+		select * from provincetimesalary
+		where ProvinceID = #{ProvinceID}
+	</select>
+	
+	<!-- 查询不同参数下地区的薪资数据，绘制折线图 -->
+	<select id="queryptswa" parameterType="String" resultType="org.alex.entity.ProvinceTimeSalary">
+		select * from provincetimesalary a
+		join province b on b.ProvinceID = a.ProvinceID
+		where b.pinyin = #{pinyin}
+	</select>
+	
+	<!-- 查询省份名称 -->
+	<select id="queryprovincename" parameterType="String" resultType="String">
+		select ProvinceName from province
+		where PinYin = #{PinYin}
+	</select>
+</mapper>
+
+
+
+		
